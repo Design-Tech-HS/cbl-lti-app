@@ -1,9 +1,13 @@
 # from app import db, ma
-from app.extensions import db, ma
+
+import datetime as dt
 from datetime import datetime
+
 import redis
 import rq
 from flask import current_app
+
+from app.extensions import db, ma
 
 
 class EnrollmentTerm(db.Model):
@@ -20,6 +24,31 @@ class EnrollmentTerm(db.Model):
 
     current_term = db.Column(db.Boolean, server_default="false", nullable=False)
     sync_term = db.Column(db.Boolean, server_default="false", nullable=False)
+
+
+# class EnrollmentTermSettings(db.Model):
+#     __tablename__ = "enrollment_term_settings"
+#     id = db.Column(db.Integer, primary_key=True)
+#     enrollment_term_id = db.Column(db.Integer, db.ForeignKey("enrollment_terms.id"))
+#     cut_off_date = db.Column(db.DateTime)
+#     current_term = db.Column(db.Boolean, server_default="false", nullable=False)
+#     sync_term = db.Column(db.Boolean, server_default="false", nullable=False)
+
+
+class AssignmentGradeCalculationConfig(db.Model):
+    __tablename__ = "assignment_grade_calculation_config"
+    id = db.Column(db.Integer, primary_key=True)
+    canvas_assignment_id = db.Column(
+        db.Integer, nullable=False
+    )  # not including foreign key relationship on purpose (since assignments are loaded from the canvas API for the UI here)
+    do_not_drop = db.Column(db.Boolean, server_default="false", nullable=False)
+    canvas_user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.now(dt.timezone.utc),
+        onupdate=datetime.now(dt.timezone.utc),
+    )
 
 
 class Record(db.Model):
@@ -167,8 +196,9 @@ class CourseUserLink(db.Model):
     __tablename__ = "course_user_link"
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
-    section_id = db.Column(db.Integer)
+    section_id = db.Column(db.Integer, primary_key=True)
     section_name = db.Column(db.String)
+
 
 class GradeCalculation(db.Model):
     __tablename__ = "grade_calculation"
@@ -184,10 +214,14 @@ class CanvasApiToken(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     token = db.Column(db.String, unique=True, nullable=False)
 
+
 class TimeMixin(object):
-    #Keep track when records are created and updated.
+    # Keep track when records are created and updated.
     created_on = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_on = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_on = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
 
 class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
@@ -207,7 +241,7 @@ class Task(db.Model):
 
     def get_progress(self):
         job = self.get_rq_job()
-        return job.meta.get('progress', 0) if job is not None else 100
+        return job.meta.get("progress", 0) if job is not None else 100
 
 
 # JSON Serialization
@@ -258,4 +292,3 @@ class GradeCriteriaSchema(ma.ModelSchema):
     class Meta:
         # model = GradeCriteria
         fields = ("grade_rank", "grade", "threshold", "min_score")
-
