@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 import requests
-from pandas.io.json import json_normalize
+from pandas import json_normalize
 
 from utilities.db_functions import upsert_enrollment_terms, get_token, get_db_courses
 
