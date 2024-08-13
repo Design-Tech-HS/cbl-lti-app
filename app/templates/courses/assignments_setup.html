@@ -1,0 +1,110 @@
+{% extends 'courses/course_base.html' %}
+{% block content %}
+<div class="container-fluid h-100">
+    <div id="tableContainer">
+        <table id="assignmentsConfigTable"></table>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+    function checkboxFormatter(value, row, index) {
+        return '<input type="checkbox" class="do-not-drop-checkbox" ' + (value ? 'checked' : '') + ' data-id="' + row.id + '">';
+    }
+
+    function checkFormatter(value, row, index) {
+        if (value) {
+            return '<i class="fas fa-check-circle" style="color: green;"></i>';
+        } else {
+            return '<i class="fas fa-check-circle" style="color: grey;"></i>';
+        }
+    }
+
+    function centerCellStyle(value, row, index, field) {
+        return {
+            classes: 'text-center',
+        };
+    }
+
+    $(document).ready(function () {
+        function getTableHeight() {
+            var navbarHeight = $('#navbar').outerHeight();
+            var viewportHeight = $(window).height();
+            return viewportHeight - navbarHeight;
+        }
+
+        function adjustTableHeight() {
+            $('#assignmentsConfigTable').bootstrapTable('resetView', {height: getTableHeight()}); // Reset the table view
+        }
+
+        $(window).resize(adjustTableHeight);
+
+
+        let $table = $('#assignmentsConfigTable');
+        var columns = [
+            {
+                "field": "name",
+                "title": "Assignment Name",
+                "sortable": true,
+            },
+            {
+                "field": "due_at",
+                "title": "Due Date",
+                "sortable": true,
+            },
+            {
+                "field": "published",
+                "title": "Published",
+                "sortable": true,
+                "formatter": checkFormatter,
+                "cellStyle": centerCellStyle // Center content
+            },
+            {
+                "field": 'do_not_drop',
+                "title": 'Do Not Drop in Letter Grade Calculation',
+                "formatter": checkboxFormatter,
+                "cellStyle": centerCellStyle // Center content
+            }
+        ];
+
+        $table.bootstrapTable({
+            url: '/api/v1/assignments-setup',
+            columns: columns,
+            search: true,
+            showSearchClearButton: true,
+            pagination: true,
+            height: getTableHeight(),
+        });
+
+        // Handle the Do Not Drop checkbox change event
+        $table.on('change', '.do-not-drop-checkbox', function () {
+            var $checkbox = $(this);
+            var assignmentId = $checkbox.data('id');
+            var doNotDrop = $checkbox.is(':checked');
+
+            // Make an AJAX call to update the value in the database
+            $.ajax({
+                url: '/api/v1/assignments-setup',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify([{
+                    assignment_id: assignmentId,
+                    do_not_drop: doNotDrop
+                }]),
+                success: function (response) {
+                    // Handle success
+                    console.log('Do Not Drop updated successfully.');
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error('Error updating Do Not Drop:', error);
+                }
+            });
+        });
+
+    });
+
+
+</script>
+
+
+{% endblock %}

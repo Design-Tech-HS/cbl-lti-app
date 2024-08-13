@@ -47,6 +47,63 @@ function makeCourseTable(students, alignments) {
   });
 }
 
+function makeAssignmentsConfigTable(assignments, assignmentsConfigTable) {
+
+  function checkFormatter(value, row, index) {
+    if (value) {
+      return '<i class="fas fa-check-circle" style="color: green;"></i>';
+    } else {
+      return '<i class="fas fa-check-circle" style="color: grey;"></i>';
+    }
+  }
+
+  function checkboxFormatter(value, row, index) {
+    return `<input type="checkbox" class="do-not-drop-checkbox" ${value ? 'checked' : ''} data-id="${row.id}">`;
+  }
+
+  window.checkboxEvents = {
+    'change .do-not-drop-checkbox': function (e, value, row, index) {
+      var newValue = $(e.target).prop('checked');
+      var rowId = $(e.target).data('id');
+      // Update the database with the new value
+      // updateDatabase(rowId, newValue);
+    }
+  };
+
+
+  var columns = [
+    {
+      "field": "name",
+      "title": "Assignment Name",
+      "sortable": true,
+    },
+    {
+      "field": "due_at",
+      "title": "Due Date",
+      "sortable": true,
+    },
+    {
+      "field": "published",
+      "title": "Published",
+      "sortable": true,
+      "formatter": checkFormatter,
+    },
+    { field: 'do_not_drop', title: 'Do Not Drop', formatter: checkboxFormatter, events: checkboxEvents }
+  ];
+
+  assignmentsConfigTable.bootstrapTable({
+    columns: columns,
+    data: assignments,
+    showColumns: true,
+    search: true,
+    pagination: true,
+  });
+
+
+
+
+}
+
 function makeMasteryTable(grades, outcomes, masteryTable) {
   // Reformat the grade names
   grades.map((value, index) => {

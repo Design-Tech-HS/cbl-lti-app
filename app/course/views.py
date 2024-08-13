@@ -44,12 +44,15 @@ def launch(lti=lti):
     :param lti: pylti
     :return: redirects to course page or adviser page depending on the course type
     """
+
+
     session["dash_type"] = "course"
 
     course_title = request.form.get("context_title")
     session["course_id"] = None
     session.modified = True
     session["course_id"] = request.form.get("custom_canvas_course_id")
+    print(f"course_title: {course_title}")
     if course_title.startswith("@dtech"):
         # Would be better to run this internally
         users = get_course_users({"id": session["course_id"]})
@@ -227,3 +230,8 @@ def analytics(course_id=None, lti=lti):
         "courses/analytics.html", graph=graph, outcome_stats=outcome_stats
     )
 
+@blueprint.route("assignments-setup")
+@lti(error=error, role="instructor", request="session", app=current_app)
+def assignments_setup(course_id=None, lti=lti):
+
+    return render_template("courses/assignments_setup.html")

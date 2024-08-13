@@ -1,79 +1,81 @@
-{% extends 'base.html' %}
-{% include 'courses/navbar.html' %}
+{% extends 'courses/course_base.html' %}
+{# {% include 'courses/navbar.html' %} #}
 
 {% block content %}
-    <div class="container">
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5>Grade Distribution</h5>
-            </div>
-            <div id="grade-table"></div>
+<div class="container">
+    <div class="card mt-3">
+        <div class="card-header">
+            <h5>Grade Distribution</h5>
         </div>
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5>Outcomes Assessed: {{ outcome_stats|length }}</h5>
-                <p>Below you'll find the max and min alignments your students
-                    have per outcome. It includes both the highest and lowest number of times a student has been assessed for each outcome. This is meant to help identify instances of ungraded assignments.</p>
-            </div>
-            <div class="card-body">
+        <div id="grade-table"></div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h5>Outcomes Assessed: {{ outcome_stats|length }}</h5>
+            <p>Below you'll find the max and min alignments your students
+                have per outcome. It includes both the highest and lowest number of times a student has been assessed
+                for each outcome. This is meant to help identify instances of ungraded assignments.</p>
+        </div>
+        <div class="card-body">
 
-                <div class="p-5">
-                    <table id="outcome-table">
+            <div class="p-5">
+                <table id="outcome-table">
 
-                    </table>
-                </div>
+                </table>
             </div>
         </div>
     </div>
-    <script>
+</div>
+<script>
 
-        $(function () {
-            var graph = {{ graph|tojson|safe }};
-            var outcome_stats = {{ outcome_stats|tojson|safe }};
-            var $out_tbl = $('#outcome-table');
-            var max = graph[0]['y'].reduce(function (a, b) {
-                return Math.max(a, b);
-            });
+    $(function () {
+        var graph = {{ graph| tojson | safe
+    }};
+    var outcome_stats = {{ outcome_stats| tojson | safe }};
+    var $out_tbl = $('#outcome-table');
+    var max = graph[0]['y'].reduce(function (a, b) {
+        return Math.max(a, b);
+    });
 
-            console.log(max);
-            var layout = {
-                yaxis: {
-                    tickformat: ',.0%',
-                    range: [0, max + 0.1],
-                },
-            };
-            Plotly.newPlot('grade-table', graph, layout, {displayModeBar: false});
+    console.log(max);
+    var layout = {
+        yaxis: {
+            tickformat: ',.0%',
+            range: [0, max + 0.1],
+        },
+    };
+    Plotly.newPlot('grade-table', graph, layout, { displayModeBar: false });
 
-            var columns = [
-                {
-                    field: 'title',
-                    title: 'Outcome',
-                    align: 'center',
-                    widthUnit: '%',
-                    width: "70",
-                    sortable: true,
-                },
-                {
-                    field: 'max',
-                    title: 'Highest number of alignments<br> for a student',
-                    align: 'center',
-                    sortable: true,
-                },
-                {
-                    field: 'min',
-                    title: 'Lowest number of alignments<br> for a student',
-                    align: 'center',
-                    sortable: true
-                },
+    var columns = [
+        {
+            field: 'title',
+            title: 'Outcome',
+            align: 'center',
+            widthUnit: '%',
+            width: "70",
+            sortable: true,
+        },
+        {
+            field: 'max',
+            title: 'Highest number of alignments<br> for a student',
+            align: 'center',
+            sortable: true,
+        },
+        {
+            field: 'min',
+            title: 'Lowest number of alignments<br> for a student',
+            align: 'center',
+            sortable: true
+        },
 
-            ];
-            $out_tbl.bootstrapTable({
-                columns: columns,
-                data: outcome_stats,
+    ];
+    $out_tbl.bootstrapTable({
+        columns: columns,
+        data: outcome_stats,
 
-            })
+    })
         });
 
 
-    </script>
+</script>
 {% endblock %}
