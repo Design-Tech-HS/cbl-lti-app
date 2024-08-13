@@ -15,7 +15,7 @@ class BaseConfig(object):
 
 class DevelopmentConfig(BaseConfig):
     db_pass = os.getenv("DB_PASSWORD")
-    username = "TheDoctor"
+    username = os.getenv("DB_USERNAME")
     SECRET_KEY = os.getenv("SECRET_FLASK")
     DEBUG = True
     TESTING = True
@@ -23,9 +23,12 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.getenv("DEVELOPMENT_DB_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = True
-    # SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "None"
     REDIS_URL = os.getenv("REDIS_URL")
+    PREFERRED_URL_SCHEME = "https"
+    CANVAS_API_URL = os.environ.get("CANVAS_API_URL")  # maybe move
+    CANVAS_API_KEY = os.environ.get("CANVAS_API_KEY")  # maybe move
 
 
 class StageConfig(BaseConfig):
