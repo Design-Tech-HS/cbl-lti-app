@@ -1,3 +1,4 @@
+# TODO: Ideally delete this file and just use app.models.py
 from sqlalchemy import (
     create_engine,
     Integer,

@@ -18,7 +18,7 @@ from app.models import Record, EnrollmentTerm, Task
 from app.queries import get_calculation_dictionaries, get_enrollment_term
 from app.user.views import get_user_dash_data
 from utilities.canvas_api import get_course_users
-from cron import run
+# from cron import run
 from utilities.helpers import format_users, error
 from app.task_utils import launch_task
 from rq import get_current_job
