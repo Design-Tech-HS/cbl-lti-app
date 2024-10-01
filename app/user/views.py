@@ -16,10 +16,10 @@ from app.models import (
     Course,
     Record,
     User,
-    OutcomeResult,
-    OutcomeResultSchema,
     EnrollmentTerm,
+    CourseUserLink,
 )
+from app.schemas import OutcomeResultSchema
 from app.queries import get_calculation_dictionaries
 from utilities.canvas_api import get_observees
 
@@ -27,6 +27,8 @@ from datetime import datetime
 
 blueprint = Blueprint("user", __name__, url_prefix="/users", static_folder="../static")
 
+# TODO: Either move to config or remove (see below - preview mode limits which students can see data to specific courses)
+preview_mode = False
 
 def return_error(msg):
     return render_template("500.html")
@@ -56,11 +58,36 @@ def launch(lti=lti):
     # TODO - exclude Teachers
     # Check if it's a student (or teacher currently)
     if "lis_person_sourcedid" in request.form.keys():
-        users = (
-            User.query.filter(User.id == session["user_id"])
-            .with_entities(User.id, User.name)
-            .all()
-        )
+        # TODO: Either improve or remove
+        if preview_mode:
+            course_ids = [
+                # SY25 S1
+                # 2950,  # English 3 s-1
+                2928,  # d.lab game design - s1 -addicott
+                # SY24 S2
+                # 2306,
+            ]
+
+            users = (
+                db.session.query(User.id, User.name)
+                .join(CourseUserLink, CourseUserLink.user_id == User.id)
+                .filter(CourseUserLink.course_id.in_(course_ids))
+                .filter(User.id == session["user_id"])
+                .with_entities(User.id, User.name)
+                .all()
+            )
+
+            print(f"*** users: {users}")
+
+            if len(users) == 0:
+                return "You do not have access to the beta version of this tool."
+
+        else:
+            users = (
+                User.query.filter(User.id == session["user_id"])
+                .with_entities(User.id, User.name)
+                .all()
+            )
 
         # Add user to session
         session["users"] = [dict(zip(["id", "name"], users[0]))]
@@ -69,6 +96,10 @@ def launch(lti=lti):
 
     # Otherwise they must be an observer
     else:
+        # TODO: Either improve or remove
+        if preview_mode:
+            return "You do not have access to the beta version of this tool."
+
         # Get observees
         response = get_observees(session["user_id"])
         session["users"] = [
@@ -82,15 +113,17 @@ def launch(lti=lti):
 @blueprint.route("/student_dashboard/<user_id>", methods=["GET"])
 @lti(error=error, request="session", role="any", app=current_app)
 def student_dashboard(lti=lti, user_id=None):
-# def student_dashboard(user_id=None):
+    # def student_dashboard(user_id=None):
     """
     Dashboard froms a student view. Used for students, parents and advisors
     :param lti: pylti
     :param user_id: users Canvas ID
     :return: template or error message
     """
-    # TODO REMOVE ME - not using records anymore
+    # TODO REMOVE ME - not using records anymore | PY update August 2024: records are being used to store the last time the data was updated
     record = Record.query.order_by(Record.id.desc()).first()
+
+
 
     # get current term
     current_term = EnrollmentTerm.query.filter(EnrollmentTerm.current_term).first()
@@ -101,18 +134,21 @@ def student_dashboard(lti=lti, user_id=None):
 
     # format as a string
     cut_off_date = cut_off_date.strftime("%Y-%m-%d")
-   
+
     if user_id:  # Todo - this probably isn't needed
         # check user is NOT authorized to access this file
         auth_users_id = [user["id"] for user in session["users"]]
-        
+
         if not (
             int(user_id) in auth_users_id
             or lti.is_role("admin")
             or lti.is_role("instructor")
         ):  # TODO - OR role = 'admin'
             return "You are not authorized to view this users information"
-        alignments, grades, user = get_user_dash_data(user_id)
+        try:
+            alignments, grades, user = get_user_dash_data(user_id)
+        except ValueError as e:
+            return "User not found in CBL Grades Dashboard database, please go back and select a different user."
 
         # calculation dictionaries
         calculation_dictionaries = get_calculation_dictionaries()
@@ -127,7 +163,7 @@ def student_dashboard(lti=lti, user_id=None):
                 grades=grades,
                 calculation_dict=calculation_dictionaries,
                 alignments=alignments,
-                current_term=current_term
+                current_term=current_term,
             )
 
     return "You currently don't have any grades!"
@@ -136,6 +172,9 @@ def student_dashboard(lti=lti, user_id=None):
 def get_user_dash_data(user_id):
     # Get student, which is linked to user-courses relationship table
     user = User.query.filter(User.id == user_id).first()
+
+    if not user:
+        raise ValueError("User not found")
 
     current_term = EnrollmentTerm.query.filter(EnrollmentTerm.current_term).first()
 
@@ -177,8 +216,10 @@ def get_user_dash_data(user_id):
         ORDER BY  ores.course_id, ores.outcome_id;
         """
     )
-    outcomes = db.session.execute(outcomes_stmt, dict(user_id=user_id, current_term=current_term.id))
-    
+    outcomes = db.session.execute(
+        outcomes_stmt, dict(user_id=user_id, current_term=current_term.id)
+    )
+
     # format outcome results into json format
     alignments = [alignment_dict(a) for a in outcomes]
 
@@ -186,22 +227,23 @@ def get_user_dash_data(user_id):
 
 
 def alignment_dict(ores):
-    alignment =  {
+    alignment = {
         "id": ores["ores_id"],
         "outcome": {
             "id": ores["o_id"],
             "display_name": ores["o_display_name"],
-            "title": ores["o_title"]
+            "title": ores["o_title"],
         },
-        "last_updated": datetime.strftime(ores["ores_last_updated"], '%Y-%m-%dT%H:%M:%S%z'),
-        "alignment": {
-            "id": ores["a_id"],
-            "name": ores["a_name"]
-        },
+        "last_updated": datetime.strftime(
+            ores["ores_last_updated"], "%Y-%m-%dT%H:%M:%S%z"
+        ),
+        "alignment": {"id": ores["a_id"], "name": ores["a_name"]},
         "course": ores["c_id"],
         "score": ores["ores_score"],
-        "submitted_or_assessed_at": datetime.strftime(ores["ores_submitted_or_assessed_at"], '%Y-%m-%dT%H:%M:%S%z'),
+        "submitted_or_assessed_at": datetime.strftime(
+            ores["ores_submitted_or_assessed_at"], "%Y-%m-%dT%H:%M:%S%z"
+        ),
         "enrollment_term": ores["ores_enrollment_term"],
-        "user": ores["ores_user_id"]
+        "user": ores["ores_user_id"],
     }
     return alignment
