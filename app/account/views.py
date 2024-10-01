@@ -150,22 +150,23 @@ def grade_report(lti=lti):
 
 # TODO: Add route for menu item (same as above) that will download csv formatted with demo info from All Student G-sheet.
 
-@blueprint.route("manual_sync", methods=["GET", "POST"])
-@lti(error=error, request="session", role="admin", app=app)
-def manual_sync(lti=lti):
-    task = Task.query.filter(Task.complete == False and Task.name == 'full_sync').first()
-    if task is None:
-        completed_task = Task.query.filter(Task.complete == True and Task.name == 'full_sync').order_by(Task.completed_at.desc()).first()
-    else:
-        completed_task = None
-    return render_template("account/manual_sync.html", task=task, completed_task=completed_task)
+# TODO: Replace manual sync logic to trigger a Job run on Dagster+
+# @blueprint.route("manual_sync", methods=["GET", "POST"])
+# @lti(error=error, request="session", role="admin", app=app)
+# def manual_sync(lti=lti):
+#     task = Task.query.filter(Task.complete == False and Task.name == 'full_sync').first()
+#     if task is None:
+#         completed_task = Task.query.filter(Task.complete == True and Task.name == 'full_sync').order_by(Task.completed_at.desc()).first()
+#     else:
+#         completed_task = None
+#     return render_template("account/manual_sync.html", task=task, completed_task=completed_task)
 
+# TODO: Replace manual sync logic to trigger a Job run on Dagster+
+# @blueprint.route("run_sync")
+# @lti(error=error, request="session", role="admin", app=app)
+# def run_sync(lti=lti):
+#     # set time limit to 4 hours
+#     task = launch_task('full_sync', 'running a full sync', job_timeout=14400)
+#     db.session.commit()
 
-@blueprint.route("run_sync")
-@lti(error=error, request="session", role="admin", app=app)
-def run_sync(lti=lti):
-    # set time limit to 4 hours
-    task = launch_task('full_sync', 'running a full sync', job_timeout=14400)
-    db.session.commit()
-
-    return redirect(url_for("account.manual_sync"))
+#     return redirect(url_for("account.manual_sync"))
