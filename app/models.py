@@ -244,51 +244,8 @@ class Task(db.Model):
         return job.meta.get("progress", 0) if job is not None else 100
 
 
-# JSON Serialization
-class CourseSchema(ma.Schema):
-    class Meta:
-        fields = ("id", "name", "enrollment_term_id")
-
-
-class UserSchema(ma.Schema):
-    class Meta:
-        fields = ("id", "name", "sis_user_id", "login_id")
-
-
-class GradeSchema(ma.Schema):
-    class Meta:
-        fields = (
-            "id",
-            "course_id",
-            "grade",
-            "record_id",
-            "user",
-            "threshold",
-            "min_score",
-        )
-
-    user = ma.Nested(UserSchema)
-
-
-class OutcomeSchema(ma.ModelSchema):
-    class Meta:
-        fields = ("title", "id", "display_name")
-
-
-class AlignmentSchema(ma.ModelSchema):
-    class Meta:
-        fields = ("id", "name")
-
-
-class OutcomeResultSchema(ma.ModelSchema):
-    class Meta:
-        model = OutcomeResult
-
-    outcome = ma.Nested(OutcomeSchema)
-    alignment = ma.Nested(AlignmentSchema)
-
-
-class GradeCriteriaSchema(ma.ModelSchema):
-    class Meta:
-        # model = GradeCriteria
-        fields = ("grade_rank", "grade", "threshold", "min_score")
+class SystemSettings(db.Model):
+    __tablename__ = "system_settings"
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(128), unique=True, nullable=False)
+    value = db.Column(db.String(128), nullable=False)

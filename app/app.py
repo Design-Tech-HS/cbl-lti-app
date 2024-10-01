@@ -21,7 +21,7 @@ from app import (
 from app.extensions import db, ma, migrate
 
 
-def create_app(config_object="app.settings.configClass"):
+def create_app():
     """Create application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.
 
     :param config_object: The configuration object to use.
@@ -39,6 +39,7 @@ def create_app(config_object="app.settings.configClass"):
     register_filters(app)
     register_blueprints(app)
     register_extensions(app)
+    register_hooks(app)
 
     # Run db migrations if needed
     if app.config.get("RUN_MIGRATIONS", False):
@@ -165,3 +166,13 @@ def register_filters(app):
     @app.template_filter("strftime")
     def datetimeformat(value, format="%m-%d-%Y"):
         return value.strftime(format)
+
+
+def register_hooks(app):
+    """Register hooks."""
+    # Register the data update mode hook
+    from app.hooks import check_data_update_mode
+
+    app.before_request(check_data_update_mode)
+
+    return None
