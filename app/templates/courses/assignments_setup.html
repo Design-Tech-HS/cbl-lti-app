@@ -15,7 +15,7 @@
         if (value) {
             return '<i class="fas fa-check-circle" style="color: green;"></i>';
         } else {
-            return '<i class="fas fa-check-circle" style="color: grey;"></i>';
+            return '<i class="fas fa-ban" style="color: grey;"></i>';
         }
     }
 
@@ -23,6 +23,28 @@
         return {
             classes: 'text-center',
         };
+    }
+
+    // Formatter function for the due_date column
+    function dueDateFormatter(value) {
+        if (!value) return '-'; // Return a placeholder if value is empty
+
+        // Parse the date string
+        let date = new Date(value);
+
+        // Convert the time to Los Angeles (PST/PDT)
+        let options = {
+            timeZone: 'America/Los_Angeles',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        };
+
+        // Format the date to a user-friendly format
+        return new Intl.DateTimeFormat('en-US', options).format(date);
     }
 
     $(document).ready(function () {
@@ -33,7 +55,7 @@
         }
 
         function adjustTableHeight() {
-            $('#assignmentsConfigTable').bootstrapTable('resetView', {height: getTableHeight()}); // Reset the table view
+            $('#assignmentsConfigTable').bootstrapTable('resetView', { height: getTableHeight() }); // Reset the table view
         }
 
         $(window).resize(adjustTableHeight);
@@ -49,20 +71,28 @@
             {
                 "field": "due_at",
                 "title": "Due Date",
+                "align": "center",
+                width: 275,
                 "sortable": true,
+                formatter: dueDateFormatter,
             },
             {
                 "field": "published",
                 "title": "Published",
+                "align": "center",
                 "sortable": true,
+                width: 100,
                 "formatter": checkFormatter,
                 "cellStyle": centerCellStyle // Center content
             },
             {
                 "field": 'do_not_drop',
                 "title": 'Do Not Drop in Letter Grade Calculation',
+                "align": "center",
+                sortable: true,
+                width: 250,
                 "formatter": checkboxFormatter,
-                "cellStyle": centerCellStyle // Center content
+                // "cellStyle": centerCellStyle // Center content
             }
         ];
 

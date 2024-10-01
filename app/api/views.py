@@ -3,44 +3,23 @@ import json
 import jwt
 import os
 import requests
-import time
 
 from canvasapi import Canvas
 from flask import (
     Blueprint,
-    render_template,
     current_app,
     session,
-    url_for,
     request,
-    redirect,
     jsonify,
 )
 from pylti.flask import lti
 from sqlalchemy import desc, func, and_
 
 from app.queries import get_enrollment_term
-import app.settings as settings
 from app.extensions import db
-from app.models import (
-    Outcome,
-    Course,
-    Record,
-    Grade,
-    User,
-    OutcomeResult,
-    CourseUserLink,
-    OutcomeResultSchema,
-    OutcomeSchema,
-    EnrollmentTerm,
-    AssignmentGradeCalculationConfig,
-)
-from app.queries import get_calculation_dictionaries
+from app.models import AssignmentGradeCalculationConfig
 
-from utilities.canvas_api import get_course_users
-
-# from utilities.cbl_calculator import calculation_dictionaries
-from utilities.helpers import make_outcome_avg_dicts, format_users, error
+from utilities.helpers import error
 
 # api secret
 SECRET_API = os.getenv("SECRET_API")
@@ -155,8 +134,8 @@ def post_assignments_setup(course_id=None, lti=lti):
     if resp.ok:
         canvas_user = resp.json()
     else:
-        print("Error")
-        # TODO: Add error handling
+        # TODO: Improve error handling
+        raise Exception(f"Error getting user from canvas: {resp.text}")
 
     for assignment in data:
         assignment_grade_calculation_config = AssignmentGradeCalculationConfig(

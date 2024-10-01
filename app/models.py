@@ -1,5 +1,3 @@
-# from app import db, ma
-
 import datetime as dt
 from datetime import datetime
 
@@ -26,14 +24,13 @@ class EnrollmentTerm(db.Model):
     sync_term = db.Column(db.Boolean, server_default="false", nullable=False)
 
 
-# class EnrollmentTermSettings(db.Model):
-#     __tablename__ = "enrollment_term_settings"
-#     id = db.Column(db.Integer, primary_key=True)
-#     enrollment_term_id = db.Column(db.Integer, db.ForeignKey("enrollment_terms.id"))
-#     cut_off_date = db.Column(db.DateTime)
-#     current_term = db.Column(db.Boolean, server_default="false", nullable=False)
-#     sync_term = db.Column(db.Boolean, server_default="false", nullable=False)
+class Alignment(db.Model):
+    __tablename__ = "alignments"
+    id = db.Column(db.String, primary_key=True)
+    name = db.Column(db.String)
+    do_not_drop = db.Column(db.Boolean, server_default="false", nullable=False)
 
+    outcome_results = db.relationship("OutcomeResult", backref="alignment")
 
 class AssignmentGradeCalculationConfig(db.Model):
     __tablename__ = "assignment_grade_calculation_config"
@@ -42,7 +39,7 @@ class AssignmentGradeCalculationConfig(db.Model):
         db.Integer, nullable=False
     )  # not including foreign key relationship on purpose (since assignments are loaded from the canvas API for the UI here)
     do_not_drop = db.Column(db.Boolean, server_default="false", nullable=False)
-    canvas_user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    canvas_user_id = db.Column(db.Integer)
     updated_at = db.Column(
         db.DateTime,
         nullable=False,
@@ -184,20 +181,15 @@ class Outcome(db.Model):
         return str(self.__dict__)
 
 
-class Alignment(db.Model):
-    __tablename__ = "alignments"
-    id = db.Column(db.String, primary_key=True)
-    name = db.Column(db.String)
 
-    outcome_results = db.relationship("OutcomeResult", backref="alignment")
 
 
 class CourseUserLink(db.Model):
     __tablename__ = "course_user_link"
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
-    section_id = db.Column(db.Integer, primary_key=True)
-    section_name = db.Column(db.String)
+    # section_id = db.Column(db.Integer, primary_key=True)
+    # section_name = db.Column(db.String)
 
 
 class GradeCalculation(db.Model):
