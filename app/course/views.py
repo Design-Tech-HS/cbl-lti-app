@@ -20,9 +20,11 @@ from app.models import (
     User,
     OutcomeResult,
     CourseUserLink,
-    OutcomeResultSchema,
-    OutcomeSchema,
     EnrollmentTerm,
+)
+from app.schemas import (
+    OutcomeSchema,
+    OutcomeResultSchema,
 )
 from app.queries import get_calculation_dictionaries
 
