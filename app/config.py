@@ -35,7 +35,7 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_ECHO = True
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "None"
-    REDIS_URL = os.getenv("REDIS_URL")
+    # REDIS_URL = os.getenv("REDIS_URL")
     PREFERRED_URL_SCHEME = "https"
     CANVAS_API_URL = os.environ.get("CANVAS_API_URL")  # maybe move
     CANVAS_API_KEY = os.environ.get("CANVAS_API_KEY")  # maybe move
@@ -70,6 +70,7 @@ class ProductionConfig(BaseConfig):
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "None"
     RUN_MIGRATIONS = os.getenv("RUN_MIGRATIONS", False)
+    # REDIS_URL = os.getenv("REDIS_URL")
 
 
 class TestingConfig(BaseConfig):

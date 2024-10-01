@@ -2,8 +2,9 @@
 """The app module, containing the app factory function."""
 import logging
 import sys
-from redis import Redis
-import rq
+
+# from redis import Redis
+# import rq
 
 from flask import Flask, render_template
 from flask_migrate import upgrade
@@ -28,8 +29,8 @@ def create_app(config_object="app.settings.configClass"):
     config_object = settings.configClass
     app = Flask(__name__.split(".")[0])
     app.config.from_object(config_object)
-    app.redis = Redis.from_url(app.config['REDIS_URL'])
-    app.task_queue = rq.Queue('cbl-tasks', connection=app.redis)
+    # app.redis = Redis.from_url(app.config['REDIS_URL'])
+    # app.task_queue = rq.Queue('cbl-tasks', connection=app.redis)
 
     register_errorhandlers(app)
     register_shellcontext(app)
