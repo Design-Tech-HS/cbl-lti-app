@@ -41,6 +41,21 @@ class DevelopmentConfig(BaseConfig):
     CANVAS_API_KEY = os.environ.get("CANVAS_API_KEY")  # maybe move
     RUN_MIGRATIONS = False
 
+# Not using staging as of 2024-08-21
+# class StageConfig(BaseConfig):
+#     db_pass = os.getenv("DB_PASSWORD")
+#     username = os.getenv("DB_USERNAME")
+#     SECRET_KEY = os.getenv("SECRET_FLASK")
+#     DEBUG = False
+#     TESTING = False
+#     PYLTI_CONFIG = settings.PYLTI_CONFIG
+#     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+#     SQLALCHEMY_TRACK_MODIFICATIONS = False
+#     SESSION_COOKIE_SECURE = True
+#     SESSION_COOKIE_HTTPONLY = True
+#     SESSION_COOKIE_SAMESITE = "None"
+#     # REDIS_URL = os.getenv("REDIS_URL")
+
 
 class ProductionConfig(BaseConfig):
     db_pass = os.getenv("DB_PASSWORD")
@@ -66,5 +81,5 @@ class TestingConfig(BaseConfig):
 configuration = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
-    "stage": StageConfig,
+    # "stage": StageConfig,
 }
