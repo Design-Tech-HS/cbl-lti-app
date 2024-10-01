@@ -39,6 +39,8 @@ class DevelopmentConfig(BaseConfig):
     PREFERRED_URL_SCHEME = "https"
     CANVAS_API_URL = os.environ.get("CANVAS_API_URL")  # maybe move
     CANVAS_API_KEY = os.environ.get("CANVAS_API_KEY")  # maybe move
+    LTI_PLACEMENT_NAME = os.getenv("LTI_PLACEMENT_NAME", 'CBL Grade Dashboard Dev')
+    LTI_OPEN_IN_NEW_TAB = False
     RUN_MIGRATIONS = False
 
 # Not using staging as of 2024-08-21
@@ -69,6 +71,8 @@ class ProductionConfig(BaseConfig):
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "None"
+    LTI_PLACEMENT_NAME = os.getenv("LTI_PLACEMENT_NAME", 'CBL Grade Dashboard')
+    LTI_OPEN_IN_NEW_TAB = False
     RUN_MIGRATIONS = os.getenv("RUN_MIGRATIONS", False)
     # REDIS_URL = os.getenv("REDIS_URL")
 

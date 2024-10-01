@@ -33,7 +33,12 @@ def xml():
     """
     try:
         return Response(
-            render_template("public/lti.xml.j2"), mimetype="application/xml"
+            render_template(
+                "public/lti.xml.j2",
+                lti_placement_name=current_app.config["LTI_PLACEMENT_NAME"],
+                lti_open_in_new_tab=current_app.config["LTI_OPEN_IN_NEW_TAB"],
+            ),
+            mimetype="application/xml"
         )
     except Exception as ex:
         print(ex)
