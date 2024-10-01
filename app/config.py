@@ -39,21 +39,7 @@ class DevelopmentConfig(BaseConfig):
     PREFERRED_URL_SCHEME = "https"
     CANVAS_API_URL = os.environ.get("CANVAS_API_URL")  # maybe move
     CANVAS_API_KEY = os.environ.get("CANVAS_API_KEY")  # maybe move
-
-
-class StageConfig(BaseConfig):
-    db_pass = os.getenv("DB_PASSWORD")
-    username = "TheDoctor"
-    SECRET_KEY = os.getenv("SECRET_FLASK")
-    DEBUG = False
-    TESTING = False
-    PYLTI_CONFIG = settings.PYLTI_CONFIG
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "None"
-    REDIS_URL = os.getenv("REDIS_URL")
+    RUN_MIGRATIONS = False
 
 
 class ProductionConfig(BaseConfig):
@@ -68,7 +54,7 @@ class ProductionConfig(BaseConfig):
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "None"
-    REDIS_URL = os.getenv("REDIS_URL")
+    RUN_MIGRATIONS = os.getenv("RUN_MIGRATIONS", False)
 
 
 class TestingConfig(BaseConfig):

@@ -6,6 +6,8 @@ from redis import Redis
 import rq
 
 from flask import Flask, render_template
+from flask_migrate import upgrade
+from sqlalchemy.exc import ProgrammingError
 
 import app.settings as settings
 from app import commands, course, user, public, api  # Need to import modules that contain blueprints
@@ -34,7 +36,22 @@ def create_app(config_object="app.settings.configClass"):
     register_filters(app)
     register_blueprints(app)
     register_extensions(app)
+
+    # Run db migrations if needed
+    if app.config.get("RUN_MIGRATIONS", False):
+        with app.app_context():
+            run_migrations_if_needed()
+
     return app
+
+
+def run_migrations_if_needed():
+    """Run database migrations if not yet applied."""
+    try:
+        result = db.engine.execute("SELECT 1 FROM alembic_version")
+    except ProgrammingError as e:
+        # Run migrations if alembic_version table is missing
+        upgrade()
 
 
 def register_extensions(app):
