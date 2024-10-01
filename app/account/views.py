@@ -59,6 +59,7 @@ def launch(lti=lti):
 @blueprint.route("/incompletes")
 @lti(error=error, request="session", role="admin", app=app)
 def incompletes(lti=lti):
+    record = Record.query.order_by(Record.id.desc()).first()
     enrollment_term = get_enrollment_term()
     stmt = db.text(
         """
@@ -84,6 +85,7 @@ def incompletes(lti=lti):
         "account/incomplete_report.html",
         incompletes=incompletes,
         enrollment_term_id=enrollment_term.id,
+        record=record,
     )
 
 

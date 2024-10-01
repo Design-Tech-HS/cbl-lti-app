@@ -47,7 +47,6 @@ def launch(lti=lti):
     :return: redirects to course page or adviser page depending on the course type
     """
 
-
     session["dash_type"] = "course"
 
     course_title = request.form.get("context_title")
@@ -174,10 +173,10 @@ def detail(course_id=357, user_id=384, lti=lti):
     # Get current outcome results
     outcomes = (
         OutcomeResult.query.options(
-            db.joinedload(OutcomeResult.outcome, innerjoin=True)
+            db.joinedload(OutcomeResult.outcome, innerjoin=True),
+            db.joinedload(OutcomeResult.alignment, innerjoin=True),
+            db.joinedload(OutcomeResult.course, innerjoin=True),
         )
-        .options(db.joinedload(OutcomeResult.alignment, innerjoin=True))
-        .options(db.joinedload(OutcomeResult.course, innerjoin=True))
         .filter(
             OutcomeResult.user_id == user_id,
             OutcomeResult.score.isnot(None),
@@ -201,6 +200,7 @@ def detail(course_id=357, user_id=384, lti=lti):
         calculation_dict=calculation_dictionaries,
         alignments=alignments,
         prev_url=prev_url,
+        record=record,
     )
 
 
@@ -209,6 +209,7 @@ def detail(course_id=357, user_id=384, lti=lti):
 def analytics(course_id=None, lti=lti):
     if not course_id:
         course_id = session["course_id"]
+    record = Record.query.order_by(Record.id.desc()).first()
     results = [grade for grade in Course.course_grades(course_id)]
     num_outcomes = (
         OutcomeResult.query.filter(OutcomeResult.course_id == course_id)
@@ -229,11 +230,16 @@ def analytics(course_id=None, lti=lti):
     ]
 
     return render_template(
-        "courses/analytics.html", graph=graph, outcome_stats=outcome_stats
+        "courses/analytics.html",
+        graph=graph,
+        outcome_stats=outcome_stats,
+        record=record,
     )
+
 
 @blueprint.route("assignments-setup")
 @lti(error=error, role="instructor", request="session", app=current_app)
 def assignments_setup(course_id=None, lti=lti):
+    record = Record.query.order_by(Record.id.desc()).first()
 
-    return render_template("courses/assignments_setup.html")
+    return render_template("courses/assignments_setup.html", record=record)
