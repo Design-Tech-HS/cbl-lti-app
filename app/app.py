@@ -2,21 +2,26 @@
 """The app module, containing the app factory function."""
 import logging
 import sys
-from redis import Redis
-import rq
+
+# from redis import Redis
+# import rq
 
 from flask import Flask, render_template
+from flask_migrate import upgrade
+from sqlalchemy.exc import ProgrammingError
 
 import app.settings as settings
-from app import commands, course, user, public, api  # Need to import modules that contain blueprints
-from app.extensions import (
-    db,
-    ma,
-    migrate
-)
+from app import (
+    commands,
+    course,
+    user,
+    public,
+    api,
+)  # Need to import modules that contain blueprints
+from app.extensions import db, ma, migrate
 
 
-def create_app(config_object="app.settings.configClass"):
+def create_app():
     """Create application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/.
 
     :param config_object: The configuration object to use.
@@ -24,8 +29,8 @@ def create_app(config_object="app.settings.configClass"):
     config_object = settings.configClass
     app = Flask(__name__.split(".")[0])
     app.config.from_object(config_object)
-    app.redis = Redis.from_url(app.config['REDIS_URL'])
-    app.task_queue = rq.Queue('cbl-tasks', connection=app.redis)
+    # app.redis = Redis.from_url(app.config['REDIS_URL'])
+    # app.task_queue = rq.Queue('cbl-tasks', connection=app.redis)
 
     register_errorhandlers(app)
     register_shellcontext(app)
@@ -34,7 +39,23 @@ def create_app(config_object="app.settings.configClass"):
     register_filters(app)
     register_blueprints(app)
     register_extensions(app)
+    register_hooks(app)
+
+    # Run db migrations if needed
+    if app.config.get("RUN_MIGRATIONS", False):
+        with app.app_context():
+            run_migrations_if_needed()
+
     return app
+
+
+def run_migrations_if_needed():
+    """Run database migrations if not yet applied."""
+    try:
+        result = db.engine.execute("SELECT 1 FROM alembic_version")
+    except ProgrammingError as e:
+        # Run migrations if alembic_version table is missing
+        upgrade()
 
 
 def register_extensions(app):
@@ -44,6 +65,7 @@ def register_extensions(app):
     ma.init_app(app)
     migrate.init_app(app, db, compare_server_default=True)
     from app.extensions import admin
+
     admin.init_app(app)
 
     # Import models
@@ -56,6 +78,7 @@ def register_blueprints(app):
     app.register_blueprint(course.views.blueprint)
     app.register_blueprint(public.views.blueprint)
     from app.account import blueprint as account_bp
+
     app.register_blueprint(account_bp)
     app.register_blueprint(api.views.blueprint)
     return None
@@ -82,20 +105,46 @@ def register_shellcontext(app):
     def shell_context():
         """Shell context objects."""
         # TODO - move import...
-        from app.models import Outcome, Course, Record, Grade, \
-            User, EnrollmentTerm, GradeCalculation, \
-            UserSchema, GradeSchema, Alignment, OutcomeResult, CourseUserLink, \
-            OutcomeSchema, OutcomeResultSchema, AlignmentSchema, Task
+        from app.models import (
+            Outcome,
+            Course,
+            Record,
+            Grade,
+            User,
+            EnrollmentTerm,
+            GradeCalculation,
+            Alignment,
+            OutcomeResult,
+            CourseUserLink,
+            Task,
+        )
+        from app.schemas import (
+            OutcomeSchema,
+            OutcomeResultSchema,
+            AlignmentSchema,
+            GradeSchema,
+            UserSchema,
+        )
 
-        return dict(db=db, Outcome=Outcome,
-                    Course=Course, Record=Record, Grade=Grade, User=User,
-                    UserSchema=UserSchema, GradeSchema=GradeSchema,
-                    Alignment=Alignment, OutcomeResult=OutcomeResult,
-                    CourseUserLink=CourseUserLink,
-                    EnrollmentTerm=EnrollmentTerm, GradeCriteria=GradeCalculation,
-                    OutcomeSchema=OutcomeSchema,
-                    OutcomeResultSchema=OutcomeResultSchema,
-                    AlignmentSchema=AlignmentSchema, Task=Task)
+        return dict(
+            db=db,
+            Outcome=Outcome,
+            Course=Course,
+            Record=Record,
+            Grade=Grade,
+            User=User,
+            UserSchema=UserSchema,
+            GradeSchema=GradeSchema,
+            Alignment=Alignment,
+            OutcomeResult=OutcomeResult,
+            CourseUserLink=CourseUserLink,
+            EnrollmentTerm=EnrollmentTerm,
+            GradeCriteria=GradeCalculation,
+            OutcomeSchema=OutcomeSchema,
+            OutcomeResultSchema=OutcomeResultSchema,
+            AlignmentSchema=AlignmentSchema,
+            Task=Task,
+        )
 
     app.shell_context_processor(shell_context)
 
@@ -114,6 +163,16 @@ def configure_logger(app):
 
 
 def register_filters(app):
-    @app.template_filter('strftime')
-    def datetimeformat(value, format='%m-%d-%Y'):
+    @app.template_filter("strftime")
+    def datetimeformat(value, format="%m-%d-%Y"):
         return value.strftime(format)
+
+
+def register_hooks(app):
+    """Register hooks."""
+    # Register the data update mode hook
+    from app.hooks import check_data_update_mode
+
+    app.before_request(check_data_update_mode)
+
+    return None

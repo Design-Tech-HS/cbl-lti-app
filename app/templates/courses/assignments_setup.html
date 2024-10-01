@@ -1,0 +1,140 @@
+{% extends 'courses/course_base.html' %}
+{% block content %}
+<div class="container-fluid h-100">
+    <div id="tableContainer">
+        <table id="assignmentsConfigTable"></table>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+    function checkboxFormatter(value, row, index) {
+        return '<input type="checkbox" class="do-not-drop-checkbox" ' + (value ? 'checked' : '') + ' data-id="' + row.id + '">';
+    }
+
+    function checkFormatter(value, row, index) {
+        if (value) {
+            return '<i class="fas fa-check-circle" style="color: green;"></i>';
+        } else {
+            return '<i class="fas fa-ban" style="color: grey;"></i>';
+        }
+    }
+
+    function centerCellStyle(value, row, index, field) {
+        return {
+            classes: 'text-center',
+        };
+    }
+
+    // Formatter function for the due_date column
+    function dueDateFormatter(value) {
+        if (!value) return '-'; // Return a placeholder if value is empty
+
+        // Parse the date string
+        let date = new Date(value);
+
+        // Convert the time to Los Angeles (PST/PDT)
+        let options = {
+            timeZone: 'America/Los_Angeles',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        };
+
+        // Format the date to a user-friendly format
+        return new Intl.DateTimeFormat('en-US', options).format(date);
+    }
+
+    $(document).ready(function () {
+        function getTableHeight() {
+            var navbarHeight = $('#navbar').outerHeight();
+            var viewportHeight = $(window).height();
+            return viewportHeight - navbarHeight;
+        }
+
+        function adjustTableHeight() {
+            $('#assignmentsConfigTable').bootstrapTable('resetView', { height: getTableHeight() }); // Reset the table view
+        }
+
+        $(window).resize(adjustTableHeight);
+
+
+        let $table = $('#assignmentsConfigTable');
+        var columns = [
+            {
+                "field": "name",
+                "title": "Assignment Name",
+                "sortable": true,
+            },
+            {
+                "field": "due_at",
+                "title": "Due Date",
+                "align": "center",
+                width: 275,
+                "sortable": true,
+                formatter: dueDateFormatter,
+            },
+            {
+                "field": "published",
+                "title": "Published",
+                "align": "center",
+                "sortable": true,
+                width: 100,
+                "formatter": checkFormatter,
+                "cellStyle": centerCellStyle // Center content
+            },
+            {
+                "field": 'do_not_drop',
+                "title": 'Do Not Drop in Letter Grade Calculation',
+                "align": "center",
+                sortable: true,
+                width: 250,
+                "formatter": checkboxFormatter,
+                // "cellStyle": centerCellStyle // Center content
+            }
+        ];
+
+        $table.bootstrapTable({
+            url: '/api/v1/assignments-setup',
+            columns: columns,
+            search: true,
+            showSearchClearButton: true,
+            pagination: true,
+            height: getTableHeight(),
+        });
+
+        // Handle the Do Not Drop checkbox change event
+        $table.on('change', '.do-not-drop-checkbox', function () {
+            var $checkbox = $(this);
+            var assignmentId = $checkbox.data('id');
+            var doNotDrop = $checkbox.is(':checked');
+
+            // Make an AJAX call to update the value in the database
+            $.ajax({
+                url: '/api/v1/assignments-setup',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify([{
+                    assignment_id: assignmentId,
+                    do_not_drop: doNotDrop
+                }]),
+                success: function (response) {
+                    // Handle success
+                    console.log('Do Not Drop updated successfully.');
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error('Error updating Do Not Drop:', error);
+                }
+            });
+        });
+
+    });
+
+
+</script>
+
+
+{% endblock %}

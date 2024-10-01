@@ -47,6 +47,63 @@ function makeCourseTable(students, alignments) {
   });
 }
 
+function makeAssignmentsConfigTable(assignments, assignmentsConfigTable) {
+
+  function checkFormatter(value, row, index) {
+    if (value) {
+      return '<i class="fas fa-check-circle" style="color: green;"></i>';
+    } else {
+      return '<i class="fas fa-check-circle" style="color: grey;"></i>';
+    }
+  }
+
+  function checkboxFormatter(value, row, index) {
+    return `<input type="checkbox" class="do-not-drop-checkbox" ${value ? 'checked' : ''} data-id="${row.id}">`;
+  }
+
+  window.checkboxEvents = {
+    'change .do-not-drop-checkbox': function (e, value, row, index) {
+      var newValue = $(e.target).prop('checked');
+      var rowId = $(e.target).data('id');
+      // Update the database with the new value
+      // updateDatabase(rowId, newValue);
+    }
+  };
+
+
+  var columns = [
+    {
+      "field": "name",
+      "title": "Assignment Name",
+      "sortable": true,
+    },
+    {
+      "field": "due_at",
+      "title": "Due Date",
+      "sortable": true,
+    },
+    {
+      "field": "published",
+      "title": "Published",
+      "sortable": true,
+      "formatter": checkFormatter,
+    },
+    { field: 'do_not_drop', title: 'Do Not Drop', formatter: checkboxFormatter, events: checkboxEvents }
+  ];
+
+  assignmentsConfigTable.bootstrapTable({
+    columns: columns,
+    data: assignments,
+    showColumns: true,
+    search: true,
+    pagination: true,
+  });
+
+
+
+
+}
+
 function makeMasteryTable(grades, outcomes, masteryTable) {
   // Reformat the grade names
   grades.map((value, index) => {
@@ -132,7 +189,7 @@ function calcOutcomeAvg(alignments, drop_date, outcome) {
 
   // calculate drop average
   let filtered_align = alignments.filter(
-    (a) => a.submitted_or_assessed_at <= drop_date
+    (a) => a.submitted_or_assessed_at <= drop_date && !a.alignment.do_not_drop
   );
 
   // If there's more than one alignment after the filter, check to see if dropping lowest score will help
@@ -222,7 +279,26 @@ function expandTable($el, outcome) {
       "<p>The lowest score <b>was</b> dropped from this outcome because it helped your average.</p>";
   } else {
     text =
-      "<p>The lowest score <b>was not</b> dropped from this outcome because dropping it would not have helped your average <b>OR</b> it was past the DROP DATE.</p>";
+      "<p>The lowest score <b>was not</b> dropped from this outcome because dropping " +
+      "it would not have helped your average <b>OR</b> it was past the DROP DATE " +
+      "<b>OR</b> your teacher marked the assignment as DO NOT DROP.</p>";
+  }
+
+  // Initialize tooltips added in the 'text' variable above.
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip({
+      boundary: 'window',
+      delay: 50,
+    })
+  })
+
+  function checkFormatter(value, row, index) {
+    if (value) {
+      return '<i class="fas fa-check-circle" style="color: grey;"></i>';
+    } else {
+      // return '<i class="fas fa-check-circle" style="color: grey;"></i>';
+      return '';
+    }
   }
 
   let $details = $card.append(text);
@@ -237,18 +313,29 @@ function expandTable($el, outcome) {
     {
       field: "score",
       title: "Score",
+      width: 100,
       align: "center",
       sortable: true,
     },
     {
       field: "submitted_or_assessed_at",
       title: "Date Assessed",
+      align: "center",
       sortable: true,
+      width: 175,
       formatter: function (value, row) {
         let dt = new Date(`${value}Z`);
         return dt.toLocaleDateString();
       },
     },
+    {
+      field: "alignment.do_not_drop",
+      title: "Marked 'Do Not Drop'",
+      align: "center",
+      sortable: true,
+      width: 200,
+      formatter: checkFormatter,
+    }
   ];
   $subTable.bootstrapTable({
     columns: columns,

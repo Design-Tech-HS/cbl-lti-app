@@ -1,14 +1,40 @@
 version: "3.7"
 
 services:
+    app:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      ports:
+        - "8090:8080"
+      environment:
+        - CONSUMER_KEY=${CONSUMER_KEY}
+        - SHARED_SECRET=${SHARED_SECRET}
+        - CANVAS_API_URL=${CANVAS_API_URL}
+        - CANVAS_API_KEY=${CANVAS_API_KEY}
+        - SECRET_FLASK=${SECRET_FLASK}
+        - CONFIG=${CONFIG}
+        - PULL_CONFIG=${PULL_CONFIG}
+        - FLASK_ENV=${FLASK_ENV}
+        # - FLASK_APP=${FLASK_APP}
+        - DB_USERNAME=${DB_USERNAME}
+        - DB_PASSWORD=${DB_PASSWORD}
+        - DB_NAME=${DB_NAME}
+        - DB_INSTANCE_UNIX_SOCKET=${DB_INSTANCE_UNIX_SOCKET}
+        - REDIS_URL=${REDIS_URL}
+        - PORT=8080
+      depends_on:
+        - db
+        - redis
+
     db:
       image: postgres
       restart: always
       ports:
-        - "5432:5432"
+        - "5433:5432"
       environment:
-        - POSTGRES_USER=TheDoctor
-        - POSTGRES_PASSWORD=secret
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=example
         - PGDATA=/var/lib/postgresql/data/pgdata
       volumes:
         - db:/var/lib/postgresql/data/pgdata

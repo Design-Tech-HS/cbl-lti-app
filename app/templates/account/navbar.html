@@ -10,13 +10,27 @@
       <li class="nav-item active">
         <a class="nav-item nav-link" href="{{ url_for('account.grade_report') }}">Grade Report</a>
       </li>
-      <li class="nav-item active">
+      {# TODO: Reactivate manual sync, but make it kick off a Dagster job #}
+      {# <li class="nav-item active">
         <a class="nav-item nav-link" href="{{ url_for('account.manual_sync') }}">Manual Grade Sync</a>
-      </li>
+      </li> #}
       
     </ul>
+    <span class="navbar-text mr-3">
+      <a id="data-last-updated-tooltip" href="#" data-toggle="tooltip">
+        Data last updated: <span id="data-last-updated" class="text-gray-600">Unknown</span>
+      </a>
+    </span>
     <span class="navbar-text">
-      <a href="{{ url_for('admin.index') }}">Admin Console</a>
+      <a class="btn btn-secondary text-gray-100" href="{{ url_for('admin.index') }}">Admin Console</a>
     </span>
   </div>
 </nav>
+
+<script src="{{ url_for('static', filename='js/data_last_updated.js')}}"></script>
+<script>
+  $(document).ready(function() {
+    let record_created_at = "{{ record.created_at }}";
+    update_data_last_updated(record_created_at);
+  });
+</script>

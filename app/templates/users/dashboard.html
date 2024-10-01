@@ -38,7 +38,12 @@
 
           {% endif %} {# End dropdown #}
           <small>
-            <p><strong>Data last updated:</strong> {{ record.created_at|strftime }}</p> 
+            <!-- <p><strong>Data last updated:</strong> {{ record.created_at|strftime }}</p>  -->
+            <span class="navbar-text mr-3">
+              <a id="data-last-updated-tooltip" href="#" data-toggle="tooltip" class="text-gray-600">
+                Data last updated: <span id="data-last-updated" class="text-gray-600">Unknown</span>
+              </a>
+            </span>
             <p>{{current_term.name}}</p>
           </small>
         </div>
@@ -50,7 +55,7 @@
           role="tablist"
           aria-orientation="vertical"
         >
-          {% for course_link in user.courses if course_link.course.enrollment_term_id == current_term.id %} 
+          {% for course_link in user.courses if course_link.course.enrollment_term_id == current_term.id %}
             {% set course_name = course_link.course.name.split(' - ')[0] %} 
             {% set course_id = course_link.course.id %} 
             {% set grades = (grades|selectattr("course_id", "eq", course_link.course.id)|list) %} 
@@ -208,6 +213,7 @@
   </div>
 </div>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/data_last_updated.js')}}"></script>
 
 <script type="text/javascript">
 
@@ -236,6 +242,11 @@
   function returnOutcomeID(o) {
       return o.outcome['id'];
   }
+
+  $(document).ready(function() {
+    let record_created_at = "{{ record.created_at }}";
+    update_data_last_updated(record_created_at);
+  });
 </script>
 
 {% endblock %}

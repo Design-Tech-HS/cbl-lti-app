@@ -18,7 +18,7 @@ from app.models import Record, EnrollmentTerm, Task
 from app.queries import get_calculation_dictionaries, get_enrollment_term
 from app.user.views import get_user_dash_data
 from utilities.canvas_api import get_course_users
-from cron import run
+# from cron import run
 from utilities.helpers import format_users, error
 from app.task_utils import launch_task
 from rq import get_current_job
@@ -59,6 +59,7 @@ def launch(lti=lti):
 @blueprint.route("/incompletes")
 @lti(error=error, request="session", role="admin", app=app)
 def incompletes(lti=lti):
+    record = Record.query.order_by(Record.id.desc()).first()
     enrollment_term = get_enrollment_term()
     stmt = db.text(
         """
@@ -84,6 +85,7 @@ def incompletes(lti=lti):
         "account/incomplete_report.html",
         incompletes=incompletes,
         enrollment_term_id=enrollment_term.id,
+        record=record,
     )
 
 
@@ -150,22 +152,23 @@ def grade_report(lti=lti):
 
 # TODO: Add route for menu item (same as above) that will download csv formatted with demo info from All Student G-sheet.
 
-@blueprint.route("manual_sync", methods=["GET", "POST"])
-@lti(error=error, request="session", role="admin", app=app)
-def manual_sync(lti=lti):
-    task = Task.query.filter(Task.complete == False and Task.name == 'full_sync').first()
-    if task is None:
-        completed_task = Task.query.filter(Task.complete == True and Task.name == 'full_sync').order_by(Task.completed_at.desc()).first()
-    else:
-        completed_task = None
-    return render_template("account/manual_sync.html", task=task, completed_task=completed_task)
+# TODO: Replace manual sync logic to trigger a Job run on Dagster+
+# @blueprint.route("manual_sync", methods=["GET", "POST"])
+# @lti(error=error, request="session", role="admin", app=app)
+# def manual_sync(lti=lti):
+#     task = Task.query.filter(Task.complete == False and Task.name == 'full_sync').first()
+#     if task is None:
+#         completed_task = Task.query.filter(Task.complete == True and Task.name == 'full_sync').order_by(Task.completed_at.desc()).first()
+#     else:
+#         completed_task = None
+#     return render_template("account/manual_sync.html", task=task, completed_task=completed_task)
 
+# TODO: Replace manual sync logic to trigger a Job run on Dagster+
+# @blueprint.route("run_sync")
+# @lti(error=error, request="session", role="admin", app=app)
+# def run_sync(lti=lti):
+#     # set time limit to 4 hours
+#     task = launch_task('full_sync', 'running a full sync', job_timeout=14400)
+#     db.session.commit()
 
-@blueprint.route("run_sync")
-@lti(error=error, request="session", role="admin", app=app)
-def run_sync(lti=lti):
-    # set time limit to 4 hours
-    task = launch_task('full_sync', 'running a full sync', job_timeout=14400)
-    db.session.commit()
-
-    return redirect(url_for("account.manual_sync"))
+#     return redirect(url_for("account.manual_sync"))

@@ -47,13 +47,14 @@ class GradeCriteriaView(CblModelView):
         grade_rank="1 = Highest grade. This order must be correct for grades to calculate correctly"
     )
 
-class TaskView(CblModelView):
-    column_editable_list = ["complete"]
-    column_descriptions = dict(
-        complete = "If a job is clearly dead, but isn't showing as complete (i.e. It's been running for over 4 hours). Change this to `true` to allow a new job."
-    )
+# NOTE: Temporarily disabling TaskView while manual sync is disabled
+# class TaskView(CblModelView):
+#     column_editable_list = ["complete"]
+#     column_descriptions = dict(
+#         complete = "If a job is clearly dead, but isn't showing as complete (i.e. It's been running for over 4 hours). Change this to `true` to allow a new job."
+#     )
 
 
 admin.add_view(EnrollmentTermView(EnrollmentTerm, db.session))
 admin.add_view(GradeCriteriaView(GradeCalculation, db.session))
-admin.add_view(TaskView(Task, db.session))
+# admin.add_view(TaskView(Task, db.session))

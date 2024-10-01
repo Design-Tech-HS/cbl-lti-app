@@ -1,4 +1,5 @@
-from app.models import GradeCriteriaSchema, EnrollmentTerm, GradeCalculation
+from app.models import EnrollmentTerm, GradeCalculation
+from app.schemas import GradeCriteriaSchema
 
 
 def get_calculation_dictionaries():
