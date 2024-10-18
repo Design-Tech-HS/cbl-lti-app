@@ -188,8 +188,8 @@ class CourseUserLink(db.Model):
     __tablename__ = "course_user_link"
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
-    # section_id = db.Column(db.Integer, primary_key=True)
-    # section_name = db.Column(db.String)
+    section_id = db.Column(db.Integer, primary_key=True)
+    section_name = db.Column(db.String)
 
 
 class GradeCalculation(db.Model):
