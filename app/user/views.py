@@ -146,7 +146,7 @@ def student_dashboard(lti=lti, user_id=None):
         ):  # TODO - OR role = 'admin'
             return "You are not authorized to view this users information"
         try:
-            alignments, grades, user = get_user_dash_data(user_id)
+            alignments, grades, user, distinct_courses = get_user_dash_data(user_id)
         except ValueError as e:
             return "User not found in CBL Grades Dashboard database, please go back and select a different user."
 
@@ -164,6 +164,7 @@ def student_dashboard(lti=lti, user_id=None):
                 calculation_dict=calculation_dictionaries,
                 alignments=alignments,
                 current_term=current_term,
+                distinct_courses=distinct_courses,
             )
 
     return "You currently don't have any grades!"
@@ -223,7 +224,17 @@ def get_user_dash_data(user_id):
     # format outcome results into json format
     alignments = [alignment_dict(a) for a in outcomes]
 
-    return alignments, grades, user
+    # distinct course enrollments (sometimes a student is enrolled in multiple sections of the 
+    # same course, such as for honors.)
+    distinct_courses = (
+        db.session.query(Course)
+        .join(CourseUserLink, Course.id == CourseUserLink.course_id)
+        .filter(CourseUserLink.user_id == user.id, Course.enrollment_term_id == current_term.id)
+        .distinct()
+        .all()
+    )
+
+    return alignments, grades, user, distinct_courses
 
 
 def alignment_dict(ores):
