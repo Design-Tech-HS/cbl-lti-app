@@ -92,7 +92,7 @@
     {# end outcome averages table #}
 
 </div>
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js', version=cached_file_invalidation_version) }}"></script>
 
 
 <script type="text/javascript">
@@ -101,6 +101,9 @@
     $(function () {
         var alignments = {{ alignments| tojson | safe
     }};
+
+    console.log("alignments: ", alignments);  // TODO: remove
+
     var drop_date = "{{ cut_off_date }}";
     console.log("***")
     console.log(drop_date);

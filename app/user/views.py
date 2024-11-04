@@ -162,6 +162,7 @@ def student_dashboard(lti=lti, user_id=None):
                 calculation_dict=calculation_dictionaries,
                 alignments=alignments,
                 current_term=current_term,
+                cached_file_invalidation_version=current_app.config["CACHED_FILE_INVALIDATION_VERSION"],
             )
 
     return "You currently don't have any grades!"
@@ -236,7 +237,7 @@ def alignment_dict(ores):
         "last_updated": datetime.strftime(
             ores["ores_last_updated"], "%Y-%m-%dT%H:%M:%S%z"
         ),
-        "alignment": {"id": ores["a_id"], "name": ores["a_name"]},
+        "alignment": {"id": ores["a_id"], "name": ores["a_name"], "do_not_drop": ores["do_not_drop"]},
         "course": ores["c_id"],
         "score": ores["ores_score"],
         "submitted_or_assessed_at": datetime.strftime(
@@ -244,6 +245,6 @@ def alignment_dict(ores):
         ),
         "enrollment_term": ores["ores_enrollment_term"],
         "user": ores["ores_user_id"],
-        "do_not_drop": ores["do_not_drop"],
+        # "do_not_drop": ores["do_not_drop"],
     }
     return alignment

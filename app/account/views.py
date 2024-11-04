@@ -115,7 +115,8 @@ def student_dashboard(user_id, lti=lti):
         calculation_dict=calculation_dictionaries,
         alignments=alignments,
         prev_url=request.referrer,
-        current_term=current_term
+        current_term=current_term,
+        cached_file_invalidation_version=current_app.config["CACHED_FILE_INVALIDATION_VERSION"],
     )
 
 

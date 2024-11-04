@@ -2,6 +2,10 @@ import os
 
 import app.settings as settings
 
+# Change the value of the following to an arbitrary value to force 
+# the browser to reload app.jss
+CACHED_FILE_INVALIDATION_VERSION = '20251104-3'
+
 
 class Config(object):
     PYLTI_CONFIG = settings.PYLTI_CONFIG
@@ -42,6 +46,8 @@ class DevelopmentConfig(BaseConfig):
     LTI_PLACEMENT_NAME = os.getenv("LTI_PLACEMENT_NAME", 'CBL Grade Dashboard Dev')
     LTI_OPEN_IN_NEW_TAB = False
     RUN_MIGRATIONS = False
+    CACHED_FILE_INVALIDATION_VERSION = CACHED_FILE_INVALIDATION_VERSION
+
 
 # Not using staging as of 2024-08-21
 # class StageConfig(BaseConfig):
@@ -75,6 +81,7 @@ class ProductionConfig(BaseConfig):
     LTI_OPEN_IN_NEW_TAB = False
     RUN_MIGRATIONS = os.getenv("RUN_MIGRATIONS", False)
     # REDIS_URL = os.getenv("REDIS_URL")
+    CACHED_FILE_INVALIDATION_VERSION = CACHED_FILE_INVALIDATION_VERSION
 
 
 class TestingConfig(BaseConfig):

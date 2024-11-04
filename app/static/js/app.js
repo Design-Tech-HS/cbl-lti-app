@@ -189,7 +189,7 @@ function calcOutcomeAvg(alignments, drop_date, outcome) {
 
   // calculate drop average
   let filtered_align = alignments.filter(
-    (a) => a.submitted_or_assessed_at <= drop_date && !a.do_not_drop
+    (a) => a.submitted_or_assessed_at <= drop_date && !a.alignment.do_not_drop
   );
 
   // If there's more than one alignment after the filter, check to see if dropping lowest score will help
@@ -329,7 +329,7 @@ function expandTable($el, outcome) {
       },
     },
     {
-      field: "do_not_drop",
+      field: "alignment.do_not_drop",
       title: "Marked 'Do Not Drop'",
       align: "center",
       sortable: true,
