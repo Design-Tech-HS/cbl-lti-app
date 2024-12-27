@@ -123,8 +123,6 @@ def student_dashboard(lti=lti, user_id=None):
     # TODO REMOVE ME - not using records anymore | PY update August 2024: records are being used to store the last time the data was updated
     record = Record.query.order_by(Record.id.desc()).first()
 
-
-
     # get current term
     current_term = EnrollmentTerm.query.filter(EnrollmentTerm.current_term).first()
     if current_term.cut_off_date:
@@ -164,6 +162,7 @@ def student_dashboard(lti=lti, user_id=None):
                 calculation_dict=calculation_dictionaries,
                 alignments=alignments,
                 current_term=current_term,
+                cached_file_invalidation_version=current_app.config["CACHED_FILE_INVALIDATION_VERSION"],
             )
 
     return "You currently don't have any grades!"
@@ -205,7 +204,8 @@ def get_user_dash_data(user_id):
             o.display_name AS o_display_name,
             o.calculation_int AS o_calculation_int,
             a.id AS a_id,
-            a.name AS a_name
+            a.name AS a_name,
+            a.do_not_drop
         FROM outcome_results ores
             JOIN courses c on c.id = ores.course_id
             JOIN outcomes o on o.id = ores.outcome_id
@@ -237,7 +237,7 @@ def alignment_dict(ores):
         "last_updated": datetime.strftime(
             ores["ores_last_updated"], "%Y-%m-%dT%H:%M:%S%z"
         ),
-        "alignment": {"id": ores["a_id"], "name": ores["a_name"]},
+        "alignment": {"id": ores["a_id"], "name": ores["a_name"], "do_not_drop": ores["do_not_drop"]},
         "course": ores["c_id"],
         "score": ores["ores_score"],
         "submitted_or_assessed_at": datetime.strftime(
@@ -245,5 +245,6 @@ def alignment_dict(ores):
         ),
         "enrollment_term": ores["ores_enrollment_term"],
         "user": ores["ores_user_id"],
+        # "do_not_drop": ores["do_not_drop"],
     }
     return alignment

@@ -5,7 +5,7 @@
         <table id="assignmentsConfigTable"></table>
     </div>
 </div>
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js', version=cached_file_invalidation_version) }}"></script>
 <script>
     function checkboxFormatter(value, row, index) {
         return '<input type="checkbox" class="do-not-drop-checkbox" ' + (value ? 'checked' : '') + ' data-id="' + row.id + '">';

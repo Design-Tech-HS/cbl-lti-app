@@ -136,6 +136,7 @@ def dashboard(lti=lti):
         record=record,
         course_id=course_id,
         outcomes=outcomes,
+        cached_file_invalidation_version=current_app.config["CACHED_FILE_INVALIDATION_VERSION"],
         # alignments=alignments
     )
 
@@ -201,6 +202,7 @@ def detail(course_id=357, user_id=384, lti=lti):
         alignments=alignments,
         prev_url=prev_url,
         record=record,
+        cached_file_invalidation_version=current_app.config["CACHED_FILE_INVALIDATION_VERSION"],
     )
 
 
@@ -242,4 +244,8 @@ def analytics(course_id=None, lti=lti):
 def assignments_setup(course_id=None, lti=lti):
     record = Record.query.order_by(Record.id.desc()).first()
 
-    return render_template("courses/assignments_setup.html", record=record)
+    return render_template(
+        "courses/assignments_setup.html",
+        record=record,
+        cached_file_invalidation_version=current_app.config["CACHED_FILE_INVALIDATION_VERSION"],
+    )

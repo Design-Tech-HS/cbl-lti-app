@@ -212,7 +212,7 @@
     </div>
   </div>
 </div>
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js', version=cached_file_invalidation_version) }}"></script>
 <script src="{{ url_for('static', filename='js/data_last_updated.js')}}"></script>
 
 <script type="text/javascript">
