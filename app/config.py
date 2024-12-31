@@ -4,7 +4,7 @@ import app.settings as settings
 
 # Change the value of the following to an arbitrary value to force 
 # the browser to reload app.jss
-CACHED_FILE_INVALIDATION_VERSION = '20251104-3'
+CACHED_FILE_INVALIDATION_VERSION = '20241230-6'
 
 
 class Config(object):

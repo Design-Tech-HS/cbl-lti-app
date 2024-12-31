@@ -55,9 +55,9 @@ def make_outcome_avg_dicts(outcome_results, grades, current_term):
             temp_avg = {"avg": safe_round(full_avg, 2), "outcome_id": outcome_id}
 
             filtered_align = [
-                o.score for o in out_aligns if o.submitted_or_assessed_at < cut_off_date
+                o.score for o in aligns if o.submitted_or_assessed_at < cut_off_date and o.alignment.do_not_drop is False
             ]
-            if len(filtered_align) > 0:
+            if len(filtered_align) > 1:
                 min_score = min(filtered_align)
                 drop_avg = (full_sum - min_score) / (num_of_aligns - 1)
                 if drop_avg > full_avg:

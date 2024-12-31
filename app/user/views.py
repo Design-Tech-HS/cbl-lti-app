@@ -77,8 +77,6 @@ def launch(lti=lti):
                 .all()
             )
 
-            print(f"*** users: {users}")
-
             if len(users) == 0:
                 return "You do not have access to the beta version of this tool."
 
@@ -102,9 +100,17 @@ def launch(lti=lti):
 
         # Get observees
         response = get_observees(session["user_id"])
+
+        if not response.ok:
+            print(f"*** Error response: {response.json()}")
+            return "There was an error getting your observees. Please try again."
         session["users"] = [
             {"id": obs["id"], "name": obs["name"]} for obs in response.json()
         ]
+
+        if len(session["users"]) == 0:
+            return "You do not have access to any students."
+        
         user_id = session["users"][0]["id"]
 
         return redirect(url_for("user.student_dashboard", user_id=user_id))
@@ -131,7 +137,7 @@ def student_dashboard(lti=lti, user_id=None):
         cut_off_date = current_term.end_at
 
     # format as a string
-    cut_off_date = cut_off_date.strftime("%Y-%m-%d")
+    cut_off_date = cut_off_date.isoformat(timespec="seconds")
 
     if user_id:  # Todo - this probably isn't needed
         # check user is NOT authorized to access this file

@@ -189,11 +189,11 @@ function calcOutcomeAvg(alignments, drop_date, outcome) {
 
   // calculate drop average
   let filtered_align = alignments.filter(
-    (a) => a.submitted_or_assessed_at <= drop_date && !a.alignment.do_not_drop
+    (a) => a.submitted_or_assessed_at < drop_date && !a.alignment.do_not_drop
   );
 
   // If there's more than one alignment after the filter, check to see if dropping lowest score will help
-  if (filtered_align.length > 0) {
+  if (filtered_align.length > 1) {
     // Only check the filtered alignments for a min_score
     let min_score = filtered_align.reduce(
       (min, val) => (val.score < min ? val.score : min),

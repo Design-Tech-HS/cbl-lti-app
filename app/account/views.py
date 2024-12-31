@@ -103,7 +103,7 @@ def student_dashboard(user_id, lti=lti):
         cut_off_date = current_term.end_at
 
     # format as a string
-    cut_off_date = cut_off_date.strftime("%Y-%m-%d")
+    cut_off_date = cut_off_date.isoformat(timespec="seconds")
 
     calculation_dictionaries = get_calculation_dictionaries()
     return render_template(

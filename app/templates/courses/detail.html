@@ -102,11 +102,8 @@
         var alignments = {{ alignments| tojson | safe
     }};
 
-    console.log("alignments: ", alignments);  // TODO: remove
-
     var drop_date = "{{ cut_off_date }}";
-    console.log("***")
-    console.log(drop_date);
+
     var courses = groupBy(alignments, 'course');
     var course_ids = Object.keys(courses);
 

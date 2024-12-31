@@ -53,7 +53,7 @@ def launch(lti=lti):
     session["course_id"] = None
     session.modified = True
     session["course_id"] = request.form.get("custom_canvas_course_id")
-    print(f"course_title: {course_title}")
+
     if course_title.startswith("@dtech"):
         # Would be better to run this internally
         users = get_course_users({"id": session["course_id"]})
@@ -116,8 +116,14 @@ def dashboard(lti=lti):
 
     # Get course outcome_results
     outcome_results = (
-        OutcomeResult.query.options(db.joinedload(OutcomeResult.course, innerjoin=True))
-        .filter(OutcomeResult.score.isnot(None), OutcomeResult.course_id == course_id)
+        OutcomeResult.query.options(
+            db.joinedload(OutcomeResult.course, innerjoin=True),
+            db.joinedload(OutcomeResult.alignment, innerjoin=True),
+        )
+        .filter(
+            OutcomeResult.score.isnot(None),
+            OutcomeResult.course_id == course_id
+        )
         .order_by(OutcomeResult.user_id, OutcomeResult.outcome_id)
         .all()
     )
@@ -160,7 +166,7 @@ def detail(course_id=357, user_id=384, lti=lti):
         cut_off_date = current_term.end_at
 
     # format as a string
-    cut_off_date = cut_off_date.strftime("%Y-%m-%d")
+    cut_off_date = cut_off_date.isoformat(timespec="seconds")
 
     # Get current grade
     grade = (
