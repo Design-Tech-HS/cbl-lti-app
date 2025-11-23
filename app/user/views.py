@@ -194,6 +194,7 @@ def get_user_dash_data(user_id):
         .join(Course)
         .filter(CourseUserLink.user_id == user_id)
         .filter(Course.enrollment_term_id == current_term.id)
+        .order_by(CourseUserLink.course_id, CourseUserLink.section_id)
         .distinct(CourseUserLink.course_id)
         .all()
     )
