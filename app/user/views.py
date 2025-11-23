@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """User views."""
+
 from flask import (
     Blueprint,
     render_template,
@@ -29,6 +30,7 @@ blueprint = Blueprint("user", __name__, url_prefix="/users", static_folder="../s
 
 # TODO: Either move to config or remove (see below - preview mode limits which students can see data to specific courses)
 preview_mode = False
+
 
 def return_error(msg):
     return render_template("500.html")
@@ -162,7 +164,9 @@ def student_dashboard(lti=lti, user_id=None):
                 calculation_dict=calculation_dictionaries,
                 alignments=alignments,
                 current_term=current_term,
-                cached_file_invalidation_version=current_app.config["CACHED_FILE_INVALIDATION_VERSION"],
+                cached_file_invalidation_version=current_app.config[
+                    "CACHED_FILE_INVALIDATION_VERSION"
+                ],
             )
 
     return "You currently don't have any grades!"
@@ -183,6 +187,20 @@ def get_user_dash_data(user_id):
         .filter(Course.enrollment_term_id == current_term.id)
         .all()
     )
+
+    # Get unique courses for current term (to avoid duplicate sidebar entries for multiple sections)
+    unique_course_links = (
+        db.session.query(CourseUserLink)
+        .join(Course)
+        .filter(CourseUserLink.user_id == user_id)
+        .filter(Course.enrollment_term_id == current_term.id)
+        .distinct(CourseUserLink.course_id)
+        .all()
+    )
+
+    # Store deduplicated courses as a separate attribute to avoid SQLAlchemy relationship issues
+    user.unique_current_courses = unique_course_links
+
     # Get outcome results
     outcomes_stmt = db.text(
         """
@@ -237,7 +255,11 @@ def alignment_dict(ores):
         "last_updated": datetime.strftime(
             ores["ores_last_updated"], "%Y-%m-%dT%H:%M:%S%z"
         ),
-        "alignment": {"id": ores["a_id"], "name": ores["a_name"], "do_not_drop": ores["do_not_drop"]},
+        "alignment": {
+            "id": ores["a_id"],
+            "name": ores["a_name"],
+            "do_not_drop": ores["do_not_drop"],
+        },
         "course": ores["c_id"],
         "score": ores["ores_score"],
         "submitted_or_assessed_at": datetime.strftime(
