@@ -55,7 +55,7 @@
           role="tablist"
           aria-orientation="vertical"
         >
-          {% for course_link in user.courses if course_link.course.enrollment_term_id == current_term.id %}
+          {% for course_link in user.unique_current_courses %}
             {% set course_name = course_link.course.name.split(' - ')[0] %} 
             {% set course_id = course_link.course.id %} 
             {% set grades = (grades|selectattr("course_id", "eq", course_link.course.id)|list) %} 
@@ -94,7 +94,7 @@
     <div class="col-md-9">
       <div class="tab-content" id="v-pills-tabContent">
         {# Filter though the courses (aka grades) #} 
-        {% for course_link in user.courses if course_link.course.enrollment_term_id == current_term.id %} 
+        {% for course_link in user.unique_current_courses %} 
         {% set course_name = course_link.course.name.split(' - ')[0]%} 
         {% set course_id = course_link.course.id %} 
         {% set grades = (grades|selectattr("course_id", "eq", course_link.course.id)|list) %} 
