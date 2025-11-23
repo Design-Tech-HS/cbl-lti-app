@@ -1,4 +1,4 @@
-# This workflow build and push a Docker container to Google Artifact Registry
+# This workflow builds and pushes a Docker container to Google Artifact Registry
 # and deploy it on Cloud Run when a commit is pushed to the "master"
 # branch.
 #
@@ -32,7 +32,7 @@ name: 'Build and Deploy to Cloud Run'
 on:
   push:
     branches:
-      - '"master"'
+      - master
 
 env:
   PROJECT_ID: 'cbl-dashboard'
@@ -74,13 +74,12 @@ jobs:
 
       - name: 'Build and Push Container'
         run: |-
-          DOCKER_TAG="$${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
           docker build --tag "${DOCKER_TAG}" .
           docker push "${DOCKER_TAG}"
+
+      # END - Docker auth and build
       - name: 'Deploy to Cloud Run'
-
-        # END - Docker auth and build
-
         uses: 'google-github-actions/deploy-cloudrun@33553064113a37d688aa6937bacbdc481580be17' # google-github-actions/deploy-cloudrun@v2
         with:
           service: '${{ env.SERVICE }}'
@@ -90,6 +89,4 @@ jobs:
           image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}'
       # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
-        run: |2-
-
-          echo ${{ steps.deploy.outputs.url }}
+        run: echo ${{ steps.deploy.outputs.url }}
